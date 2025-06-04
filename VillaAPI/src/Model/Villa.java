@@ -10,6 +10,9 @@ public class Villa {
         this.name = name;
         this.location = location;
     }
-
     // Getter dan Setter
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public String getLocation() { return location; }
+    
 }
