@@ -1,7 +1,7 @@
 package service;
 
 import database.DatabaseHelper;
-import model.Villa;
+import Model.Villa;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
