@@ -1,4 +1,6 @@
-public class main {
+package src;
+
+public class Main {
     // API key yang digunakan untuk autentikasi (harus dicocokkan oleh request)
     public static final String API_KEY = "123456"; // kamu bisa ubah sesuai kebutuhan
 
