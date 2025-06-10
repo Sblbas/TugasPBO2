@@ -2,7 +2,7 @@ import static spark.Spark.*;
 import service.VillaService;
 
 public class Main {
-    private static final String API_KEY = "APIKEY123";
+    private static final String API_KEY = "123456";
 
     public static void main(String[] args) {
         port(8080);
