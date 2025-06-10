@@ -3,17 +3,17 @@ package src.model;
 public class Villa {
     private int id;
     private String name;
-    private String location;
+    private String address;
     private double price;
     private int capacity;
 
     // Constructor
     public Villa() {}
 
-    public Villa(int id, String name, String location, double price, int capacity) {
+    public Villa(int id, String name, String address, double price, int capacity) {
         this.id = id;
         this.name = name;
-        this.location = location;
+        this.address = address;
         this.price = price;
         this.capacity = capacity;
     }
@@ -35,12 +35,12 @@ public class Villa {
         this.name = name;
     }
 
-    public String getLocation() {
-        return location;
+    public String getaddress() {
+        return address;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setaddress(String address) {
+        this.address = address;
     }
 
     public double getPrice() {
