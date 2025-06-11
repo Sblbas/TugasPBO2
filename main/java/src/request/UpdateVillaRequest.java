@@ -3,16 +3,16 @@ package main.java.src.request;
 public class UpdateVillaRequest {
     private int id;
     private String name;
-    private String location;
+    private String address;
     private double price;
     private int capacity;
 
     public UpdateVillaRequest() {}
 
-    public UpdateVillaRequest(int id, String name, String location, double price, int capacity) {
+    public UpdateVillaRequest(int id, String name, String address, double price, int capacity) {
         this.id = id;
         this.name = name;
-        this.location = location;
+        this.address = address;
         this.price = price;
         this.capacity = capacity;
     }
@@ -34,12 +34,12 @@ public class UpdateVillaRequest {
         this.name = name;
     }
 
-    public String getLocation() {
-        return location;
+    public String getaddress() {
+        return address;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setaddress(String address) {
+        this.address = address;
     }
 
     public double getPrice() {
