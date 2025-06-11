@@ -2,15 +2,15 @@ package main.java.src.request;
 
 public class CreateVillaRequest {
     private String name;
-    private String location;
+    private String address;
     private double price;
     private int capacity;
 
     public CreateVillaRequest() {}
 
-    public CreateVillaRequest(String name, String location, double price, int capacity) {
+    public CreateVillaRequest(String name, String address, double price, int capacity) {
         this.name = name;
-        this.location = location;
+        this.address = address;
         this.price = price;
         this.capacity = capacity;
     }
@@ -24,12 +24,12 @@ public class CreateVillaRequest {
         this.name = name;
     }
 
-    public String getLocation() {
-        return location;
+    public String getaddress() {
+        return address;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setaddress(String address) {
+        this.address = address;
     }
 
     public double getPrice() {
