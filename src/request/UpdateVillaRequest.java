@@ -4,17 +4,13 @@ public class UpdateVillaRequest {
     private int id;
     private String name;
     private String address;
-    private double price;
-    private int capacity;
 
     public UpdateVillaRequest() {}
 
-    public UpdateVillaRequest(int id, String name, String address, double price, int capacity) {
+    public UpdateVillaRequest(int id, String name, String address) {
         this.id = id;
         this.name = name;
         this.address = address;
-        this.price = price;
-        this.capacity = capacity;
     }
 
     // Getter dan Setter
@@ -34,27 +30,11 @@ public class UpdateVillaRequest {
         this.name = name;
     }
 
-    public String getaddress() {
+    public String getAddress() {
         return address;
     }
 
-    public void setaddress(String address) {
+    public void setAddress(String address) {
         this.address = address;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
     }
 }

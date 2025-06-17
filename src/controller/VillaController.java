@@ -1,7 +1,7 @@
 package src.controller;
 
-import main.java.src.Response;
-import main.java.src.service.VillaService;
+import src.service.VillaService;
+import Tugas2.Response;
 
 public class VillaController {
 

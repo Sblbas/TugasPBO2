@@ -3,16 +3,12 @@ package src.request;
 public class CreateVillaRequest {
     private String name;
     private String address;
-    private double price;
-    private int capacity;
 
     public CreateVillaRequest() {}
 
-    public CreateVillaRequest(String name, String address, double price, int capacity) {
+    public CreateVillaRequest(String name, String address) {
         this.name = name;
         this.address = address;
-        this.price = price;
-        this.capacity = capacity;
     }
 
     // Getter dan Setter
@@ -24,27 +20,11 @@ public class CreateVillaRequest {
         this.name = name;
     }
 
-    public String getaddress() {
+    public String getAddress() {
         return address;
     }
 
-    public void setaddress(String address) {
+    public void setAddress(String address) {
         this.address = address;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
     }
 }

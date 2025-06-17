@@ -8,7 +8,15 @@ public class Database {
 
     private static final String DB_URL = "jdbc:sqlite:data/villa.db";
 
+    // Menambahkan metode untuk memeriksa koneksi
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DB_URL);
+        try {
+            Connection connection = DriverManager.getConnection(DB_URL);
+            System.out.println("Koneksi ke database berhasil.");
+            return connection;
+        } catch (SQLException e) {
+            System.err.println("Gagal terhubung ke database: " + e.getMessage());
+            throw e;
+        }
     }
 }

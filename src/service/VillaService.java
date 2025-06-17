@@ -17,7 +17,8 @@ public class VillaService {
     public String getAllVillasAsJson() throws Exception {
         List<Villa> villas = new ArrayList<>();
 
-        String sql = "SELECT id, name, address, price, capacity FROM villas";
+        // Query SQL tanpa kolom price dan capacity
+        String sql = "SELECT id, name, address FROM villas";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -28,8 +29,6 @@ public class VillaService {
                 villa.setId(rs.getInt("id"));
                 villa.setName(rs.getString("name"));
                 villa.setAddress(rs.getString("address"));
-                villa.setPrice(rs.getDouble("price"));
-                villa.setCapacity(rs.getInt("capacity"));
                 villas.add(villa);
             }
 

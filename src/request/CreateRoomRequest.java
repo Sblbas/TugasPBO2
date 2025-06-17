@@ -3,16 +3,12 @@ package src.request;
 public class CreateRoomRequest {
     private String name;
     private String type;
-    private int capacity;
-    private double price;
 
     public CreateRoomRequest() {}
 
-    public CreateRoomRequest(String name, String type, int capacity, double price) {
+    public CreateRoomRequest(String name, String type) {
         this.name = name;
         this.type = type;
-        this.capacity = capacity;
-        this.price = price;
     }
 
     // Getter dan Setter
@@ -30,21 +26,5 @@ public class CreateRoomRequest {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
     }
 }
