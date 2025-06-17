@@ -1,7 +1,7 @@
 package main.java.src.service;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import main.java.src.database.Database;
 import main.java.src.model.Villa;
@@ -17,7 +17,7 @@ public class VillaService {
     public String getAllVillasAsJson() throws Exception {
         List<Villa> villas = new ArrayList<>();
 
-        String sql = "SELECT id, name, addresssetaddress(sql);, price, capacity FROM villas";
+        String sql = "SELECT id, name, address, price, capacity FROM villas";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -37,7 +37,9 @@ public class VillaService {
             throw new Exception("Gagal mengambil data villa: " + e.getMessage());
         }
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return gson.toJson(villas);
+        // Menggunakan Jackson untuk mengubah list menjadi JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Untuk membuat JSON lebih mudah dibaca
+        return objectMapper.writeValueAsString(villas);
     }
 }
