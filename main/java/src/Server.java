@@ -1,60 +1,37 @@
 package main.java.src;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 
-import main.java.src.controller.VillaController;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 
 public class Server {
-
-    private int port;
-    private VillaController villaController;
+    private final int port;
+    private HttpServer server;
 
     public Server(int port) {
         this.port = port;
-        this.villaController = new VillaController();
     }
 
-    public void start() {
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Server berjalan di port " + port + "...");
+    public void start() throws IOException {
+        server = HttpServer.create(new InetSocketAddress(port), 0);
+        server.createContext("/", new RootHandler());
+        server.setExecutor(null); // default executor
+        server.start();
+        System.out.println("Server berjalan di port " + port);
+    }
 
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-
-                // Baca permintaan dari client
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-
-                Request request = new Request(in);
-                Response response;
-
-                // Cek API key dari header
-                String apiKey = request.getHeader("x-api-key");
-                if (apiKey == null || !apiKey.equals(Main.API_KEY)) {
-                    response = new Response(401, "Unauthorized", "{\"error\": \"API key invalid\"}");
-                } else {
-                    // Routing endpoint vila
-                    if (request.getMethod().equals("GET") && request.getPath().equals("/villas")) {
-                        response = villaController.getAllVillas();
-                    } else {
-                        response = new Response(404, "Not Found", "{\"error\": \"Endpoint tidak ditemukan\"}");
-                    }
-                }
-
-                // Kirim response ke client
-                out.write(response.toHttpResponse());
-                out.flush();
-
-                // Tutup koneksi
-                in.close();
-                out.close();
-                clientSocket.close();
-            }
-
-        } catch (IOException e) {
-            System.err.println("Terjadi kesalahan pada server: " + e.getMessage());
+    static class RootHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String response = "Selamat datang di server!";
+            exchange.sendResponseHeaders(200, response.getBytes().length);
+            OutputStream os = exchange.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
         }
     }
 }

@@ -4,18 +4,14 @@ public class Villa {
     private int id;
     private String name;
     private String address;
-    private double price;
-    private int capacity;
 
     // Constructor
     public Villa() {}
 
-    public Villa(int id, String name, String address, double price, int capacity) {
+    public Villa(int id, String name, String address) {
         this.id = id;
         this.name = name;
         this.address = address;
-        this.price = price;
-        this.capacity = capacity;
     }
 
     // Getter dan Setter
@@ -41,21 +37,5 @@ public class Villa {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
     }
 }
