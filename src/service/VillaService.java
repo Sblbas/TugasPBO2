@@ -2,6 +2,7 @@ package service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import database.RoomDAO;
 import model.Villa;
 import model.Room;
 import database.Database;
@@ -13,6 +14,7 @@ import java.io.*;
 import com.sun.net.httpserver.HttpExchange;
 
 public class VillaService {
+    private RoomDAO roomDAO = new RoomDAO(); // atau lewat constructor
     private final ObjectMapper mapper = new ObjectMapper();
 
     public List<Villa> getAllVillas() {
@@ -139,9 +141,52 @@ public class VillaService {
         return "[]";
     }
 
+    public List<Room> getRoomsByVillaId(int villaId) {
+        List<Room> rooms = new ArrayList<>();
+        String query = "SELECT * FROM room_types WHERE villa_id = ?";
+
+        try (Connection conn = Database.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, villaId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Room room = new Room();
+                    room.setId(rs.getInt("id"));
+                    room.setVilla(rs.getInt("villa_id"));
+                    room.setName(rs.getString("name"));
+                    room.setQuantity(rs.getInt("quantity"));
+                    room.setCapacity(rs.getInt("capacity"));
+                    room.setPrice(rs.getInt("price"));
+                    room.setBedSize(Room.BedSize.valueOf(rs.getString("bed_size").toUpperCase()));
+                    room.setHasDesk(rs.getBoolean("hasDesk"));
+                    room.setHasAc(rs.getBoolean("hasAc"));
+                    room.setHasTv(rs.getBoolean("hasTv"));
+                    room.setHasWifi(rs.getBoolean("hasWifi"));
+                    room.setHasShower(rs.getBoolean("hasShower"));
+                    room.setHasHotwater(rs.getBoolean("hasHotwater"));
+                    room.setHasFridge(rs.getBoolean("hasFridge"));
+
+                    rooms.add(room);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace(); // Atau log error
+        }
+
+
+        return rooms;
+    }
+
     public String getRoomsByVillaIdAsJson(int villaId) {
-        // Placeholder - tergantung model Room
-        return "[]";
+        List<Room> rooms = roomDAO.getRoomsByVillaId(villaId);
+        try {
+            return mapper.writeValueAsString(rooms); // Jackson ObjectMapper
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "{\"error\": \"JSON serialization failed\"}";
+        }
     }
 
     public String getBookingsByVillaIdAsJson(int villaId) {
@@ -152,61 +197,87 @@ public class VillaService {
         return "[]";
     }
 
-//    public String addRoomToVilla(HttpExchange exchange, int villaId) throws IOException {
-//        // Placeholder - tergantung struktur tabel rooms
-//        InputStream is = exchange.getRequestBody();
-//        Room room = mapper.readValue(is, Room.class);
-//        room.setVillaId(villaId);
-//
-//        String query = "INSERT INTO rooms (villa_id, name, price, facilities) VALUES (?, ?, ?, ?)";
-//
-//        try (Connection conn = Database.connect();
-//             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-//            stmt.setInt(1, room.getVillaId());
-//            stmt.setString(2, room.getName());
-//            stmt.setDouble(3, room.getPrice());
-//            stmt.setString(4, room.getFacilities());
-//            stmt.executeUpdate();
-//
-//            ResultSet keys = stmt.getGeneratedKeys();
-//            if (keys.next()) {
-//                room.setId(keys.getInt(1));
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return mapper.writeValueAsString(room);
-//    }
+    public String addRoomToVilla(HttpExchange exchange, int villaId) throws IOException {
+        InputStream is = exchange.getRequestBody();
+        Room room = mapper.readValue(is, Room.class);
+        room.setVilla(villaId);  // ganti dari setVillaId
 
-//    public String updateRoom(HttpExchange exchange, int villaId, int roomId) throws IOException {
-//        InputStream is = exchange.getRequestBody();
-//        Room room = mapper.readValue(is, Room.class);
-//
-//        String query = "UPDATE rooms SET name = ?, price = ?, facilities = ? WHERE id = ? AND villa_id = ?";
-//
-//        try (Connection conn = Database.connect();
-//             PreparedStatement stmt = conn.prepareStatement(query)) {
-//            stmt.setString(1, room.getName());
-//            stmt.setDouble(2, room.getPrice());
-//            stmt.setString(3, room.getFacilities());
-//            stmt.setInt(4, roomId);
-//            stmt.setInt(5, villaId);
-//            stmt.executeUpdate();
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//
-//        room.setId(roomId);
-//        room.setVillaId(villaId);
-//        return mapper.writeValueAsString(room);
-//    }
+        String query = "INSERT INTO room_types (villa, name, quantity, capacity, price, bed_size, has_desk, has_ac, has_tv, has_wifi, has_shower, has_hotwater, has_fridge) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";  // ⬅️ Total: 14 kolom
 
-    public String deleteRoomFromVilla(int villaId, int roomId) {
-        String query = "DELETE FROM rooms WHERE id = ? AND villa_id = ?";
+
+        try (Connection conn = Database.connect();
+             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setInt(1, room.getVilla());
+            stmt.setString(2, room.getName());
+            stmt.setInt(3, room.getQuantity());
+            stmt.setInt(4, room.getCapacity());
+            stmt.setInt(5, room.getPrice());
+            stmt.setString(6, room.getBedSize().toString().toLowerCase());
+            stmt.setBoolean(7, room.hasDesk());
+            stmt.setBoolean(8, room.hasAc());
+            stmt.setBoolean(9, room.hasTv());
+            stmt.setBoolean(10, room.hasWifi());
+            stmt.setBoolean(11, room.hasShower());
+            stmt.setBoolean(12, room.hasHotwater());
+            stmt.setBoolean(13, room.hasFridge());
+
+            stmt.executeUpdate();
+
+            ResultSet keys = stmt.getGeneratedKeys();
+            if (keys.next()) {
+                room.setId(keys.getInt(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return mapper.writeValueAsString(room);
+    }
+
+    public String updateRoom(HttpExchange exchange, int villaId, int roomId) throws IOException {
+        InputStream is = exchange.getRequestBody();
+        Room room = mapper.readValue(is, Room.class);
+        room.setId(roomId);
+        room.setVilla(villaId);
+
+        String query = "UPDATE room_types SET name = ?, quantity = ?, capacity = ?, price = ?, bed_size = ?, " +
+                "has_desk = ?, has_ac = ?, has_tv = ?, has_wifi = ?, has_shower = ?, has_hotwater = ?, has_fridge = ? " +
+                "WHERE id = ? AND villa = ?";
 
         try (Connection conn = Database.connect();
              PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, room.getName());
+            stmt.setInt(2, room.getQuantity());
+            stmt.setInt(3, room.getCapacity());
+            stmt.setInt(4, room.getPrice());
+            stmt.setString(5, room.getBedSize().toString());
+            stmt.setBoolean(6, room.hasDesk());
+            stmt.setBoolean(7, room.hasAc());
+            stmt.setBoolean(8, room.hasTv());
+            stmt.setBoolean(9, room.hasWifi());
+            stmt.setBoolean(10, room.hasShower());
+            stmt.setBoolean(11, room.hasHotwater());
+            stmt.setBoolean(12, room.hasFridge());
+            stmt.setInt(13, roomId);
+            stmt.setInt(14, villaId);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return mapper.writeValueAsString(room);
+    }
+
+    public String deleteRoomFromVilla(int villaId, int roomId) {
+        String query = "DELETE FROM room_types WHERE id = ? AND villa = ?";
+
+        try (Connection conn = Database.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
             stmt.setInt(1, roomId);
             stmt.setInt(2, villaId);
             stmt.executeUpdate();
@@ -217,4 +288,5 @@ public class VillaService {
 
         return "{\"message\":\"Room deleted successfully\"}";
     }
+
 }

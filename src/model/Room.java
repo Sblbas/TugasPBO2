@@ -2,7 +2,7 @@ package model;
 
 public class Room {
     private int id;
-    private int villaId;
+    private int villa;
     private String name;
     private int quantity;
     private int capacity;
@@ -21,11 +21,14 @@ public class Room {
     }
 
     // Constructor
+    public Room() {
+    }
+
     public Room(int id, int villaId, String name, int quantity, int capacity, int price,
                 BedSize bedSize, boolean hasDesk, boolean hasAc, boolean hasTv,
                 boolean hasWifi, boolean hasShower, boolean hasHotwater, boolean hasFridge) {
         this.id = id;
-        this.villaId = villaId;
+        this.villa = villa;
         this.name = name;
         this.quantity = quantity;
         this.capacity = capacity;
@@ -45,8 +48,26 @@ public class Room {
         return id;
     }
 
-    public int getVillaId() {
-        return villaId;
+    public String getFacilities() {
+        StringBuilder sb = new StringBuilder();
+        if (hasDesk) sb.append("Desk,");
+        if (hasAc) sb.append("AC,");
+        if (hasTv) sb.append("TV,");
+        if (hasWifi) sb.append("WiFi,");
+        if (hasShower) sb.append("Shower,");
+        if (hasHotwater) sb.append("Hotwater,");
+        if (hasFridge) sb.append("Fridge,");
+
+        // Hapus koma terakhir jika ada
+        if (sb.length() > 0) {
+            sb.setLength(sb.length() - 1);
+        }
+        return sb.toString();
+    }
+
+
+    public int getVilla() {
+        return villa;
     }
 
     public String getName() {
@@ -102,8 +123,8 @@ public class Room {
         this.id = id;
     }
 
-    public void setVillaId(int villaId) {
-        this.villaId = villaId;
+    public void setVilla(int villa) {
+        this.villa = villa;
     }
 
     public void setName(String name) {
