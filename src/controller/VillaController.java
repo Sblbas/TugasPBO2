@@ -70,18 +70,31 @@ public class VillaController implements HttpHandler {
                 statusCode = 201;
             }
 
-            // DELETE /villas/{id}
-            else if ("DELETE".equalsIgnoreCase(method) && segments.length == 3) {
-                int id = Integer.parseInt(segments[2]);
-                json = villaService.deleteVilla(id);
-            }
-
             // PUT /villas/{id}
             else if ("PUT".equalsIgnoreCase(method) && segments.length == 3) {
                 int id = Integer.parseInt(segments[2]);
                 json = villaService.updateVilla(exchange, id);
             }
 
+            // PUT /villas/{villaId}/rooms/{roomId}
+            else if ("PUT".equalsIgnoreCase(method) && segments.length == 5 && segments[3].equals("rooms")) {
+                int villaId = Integer.parseInt(segments[2]);
+                int roomId = Integer.parseInt(segments[4]);
+                json = villaService.updateRoom(exchange, villaId, roomId);
+            }
+
+            // DELETE /villas/{id}
+            else if ("DELETE".equalsIgnoreCase(method) && segments.length == 3) {
+                int id = Integer.parseInt(segments[2]);
+                json = villaService.deleteVilla(id);
+            }
+
+            // DELETE /villas/{villaId}/rooms/{roomId}
+            else if ("DELETE".equalsIgnoreCase(method) && segments.length == 5 && segments[3].equals("rooms")) {
+                int villaId = Integer.parseInt(segments[2]);
+                int roomId = Integer.parseInt(segments[4]);
+                json = villaService.deleteRoomFromVilla(villaId, roomId);
+            }
 
             else {
                 statusCode = 404;
