@@ -1,49 +1,47 @@
 package service;
 
-import database.Database;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import database.VoucherDAO;
 import model.Voucher;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 
 public class VoucherService {
+    private final VoucherDAO voucherDAO = new VoucherDAO();
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    public void createVoucher(Voucher voucher) throws Exception {
-        String sql = "INSERT INTO vouchers (code, description, discount, start_date, end_date) VALUES (?, ?, ?, ?, ?)";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, voucher.getCode());
-            stmt.setString(2, voucher.getDescription());
-            stmt.setDouble(3, voucher.getDiscount());
-            stmt.setObject(4, voucher.getStartDate());  // assuming JDBC 4.2+ with java.time support
-            stmt.setObject(5, voucher.getEndDate());
-
-            stmt.executeUpdate();
+    public String getAllVouchersAsJson() {
+        try {
+            List<Voucher> vouchers = voucherDAO.getAllVouchers();
+            return mapper.writeValueAsString(vouchers);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "{\"error\":\"Failed to convert to JSON\"}";
         }
     }
 
-
-    public List<Voucher> getAllVouchers() throws Exception {
-        List<Voucher> list = new ArrayList<>();
-        String sql = "SELECT * FROM vouchers";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                Voucher v = new Voucher();
-                v.setId(rs.getInt("id"));
-                v.setCode(rs.getString("code"));
-                v.setDiscount(rs.getDouble("discount"));
-                list.add(v);
-            }
+    public String getVoucherByIdAsJson(int id) {
+        Voucher voucher = voucherDAO.getVoucherById(id);
+        try {
+            return voucher != null ?
+                    mapper.writeValueAsString(voucher) :
+                    "{\"error\":\"Voucher not found\"}";
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "{\"error\":\"Failed to convert to JSON\"}";
         }
+    }
 
-        return list;
+    public boolean createVoucher(Voucher voucher) {
+        return voucherDAO.insertVoucher(voucher);
+    }
+
+    public boolean updateVoucher(int id, Voucher voucher) {
+        return voucherDAO.updateVoucher(id, voucher);
+    }
+
+    public boolean deleteVoucher(int id) {
+        return voucherDAO.deleteVoucher(id);
     }
 }

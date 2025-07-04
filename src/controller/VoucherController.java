@@ -9,7 +9,6 @@ import service.VoucherService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 
 public class VoucherController implements HttpHandler {
 
@@ -18,33 +17,53 @@ public class VoucherController implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        try {
-            // Optional: validasi API key
-            util.APIKeyValidator.rejectIfInvalid(exchange);
+        String method = exchange.getRequestMethod();
+        String path = exchange.getRequestURI().getPath();
+        String[] segments = path.split("/");
+        String response = "";
+        int status = 200;
 
-            String method = exchange.getRequestMethod();
-            if ("GET".equalsIgnoreCase(method)) {
-                List<Voucher> vouchers = voucherService.getAllVouchers();
-                String response = objectMapper.writeValueAsString(vouchers);
-                sendResponse(exchange, 200, response);
-            } else if ("POST".equalsIgnoreCase(method)) {
+        try {
+            if ("GET".equalsIgnoreCase(method) && segments.length == 2) {
+                // GET /vouchers
+                response = voucherService.getAllVouchersAsJson();
+            } else if ("GET".equalsIgnoreCase(method) && segments.length == 3) {
+                // GET /vouchers/{id}
+                int id = Integer.parseInt(segments[2]);
+                response = voucherService.getVoucherByIdAsJson(id);
+            } else if ("POST".equalsIgnoreCase(method) && segments.length == 2) {
+                // POST /vouchers
                 InputStream is = exchange.getRequestBody();
                 Voucher voucher = objectMapper.readValue(is, Voucher.class);
-                voucherService.createVoucher(voucher);
-                sendResponse(exchange, 201, "{\"message\":\"Voucher created successfully\"}");
+                boolean created = voucherService.createVoucher(voucher);
+                response = created ? "{\"message\":\"Voucher created\"}" : "{\"error\":\"Failed to create voucher\"}";
+                status = created ? 201 : 400;
+            } else if ("PUT".equalsIgnoreCase(method) && segments.length == 3) {
+                // PUT /vouchers/{id}
+                int id = Integer.parseInt(segments[2]);
+                InputStream is = exchange.getRequestBody();
+                Voucher voucher = objectMapper.readValue(is, Voucher.class);
+                boolean updated = voucherService.updateVoucher(id, voucher);
+                response = updated ? "{\"message\":\"Voucher updated\"}" : "{\"error\":\"Failed to update voucher\"}";
+            } else if ("DELETE".equalsIgnoreCase(method) && segments.length == 3) {
+                // DELETE /vouchers/{id}
+                int id = Integer.parseInt(segments[2]);
+                boolean deleted = voucherService.deleteVoucher(id);
+                response = deleted ? "{\"message\":\"Voucher deleted\"}" : "{\"error\":\"Failed to delete voucher\"}";
             } else {
-                sendResponse(exchange, 405, "{\"error\":\"Method not allowed\"}");
+                status = 404;
+                response = "{\"error\":\"Not Found\"}";
             }
         } catch (Exception e) {
-            exception.GlobalExceptionHandler.handle(exchange, e);
+            e.printStackTrace();
+            status = 500;
+            response = "{\"error\":\"Internal Server Error\"}";
         }
-    }
 
-    private void sendResponse(HttpExchange exchange, int statusCode, String responseText) throws IOException {
-        exchange.getResponseHeaders().add("Content-Type", "application/json");
-        exchange.sendResponseHeaders(statusCode, responseText.getBytes().length);
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
+        exchange.sendResponseHeaders(status, response.getBytes().length);
         OutputStream os = exchange.getResponseBody();
-        os.write(responseText.getBytes());
+        os.write(response.getBytes());
         os.close();
     }
 }
