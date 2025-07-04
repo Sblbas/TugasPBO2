@@ -46,12 +46,16 @@ public class CustomerController implements HttpHandler {
             }
 
             // GET /customers/{id}/reviews
-            else if ("GET".equalsIgnoreCase(method) && segments.length == 6 && segments[3].equals("bookings") && segments[5].equals("reviews")) {
+            else if ("GET".equalsIgnoreCase(method) && segments.length == 4 && segments[3].equals("reviews")) {
+                int customerId = Integer.parseInt(segments[2]);
+                json = customerService.getReviewsByCustomerId(customerId);
+            }
+            // GET /customers/{id}/bookings/{id}/reviews
+            else if("GET".equalsIgnoreCase(method) && segments.length == 6 && segments[3].equals("bookings") && segments[5].equals("reviews")){
                 int customerId = Integer.parseInt(segments[2]);
                 int bookingId = Integer.parseInt(segments[4]);
                 json = customerService.getReviewsByCustomerBookingAsJson(customerId, bookingId);
             }
-
             // POST /customers
             else if ("POST".equalsIgnoreCase(method) && segments.length == 2) {
                 InputStream is = exchange.getRequestBody();

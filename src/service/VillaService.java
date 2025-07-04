@@ -2,53 +2,26 @@ package service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import database.BookingDAO;
-import database.ReviewDAO;
-import database.RoomDAO;
-import model.Villa;
-import model.Room;
-import model.Booking;
-import model.Reviews;
-import database.Database;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.io.*;
 import com.sun.net.httpserver.HttpExchange;
+import database.*;
+import model.*;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.SQLException;
+import java.util.List;
 
 public class VillaService {
-    private final ReviewDAO reviewDAO = new ReviewDAO();
-    private final RoomDAO roomDAO = new RoomDAO(); // atau lewat constructor
-    private final BookingDAO bookingDAO = new BookingDAO();
     private final ObjectMapper mapper = new ObjectMapper();
-
-    public List<Villa> getAllVillas() {
-        List<Villa> villas = new ArrayList<>();
-        String query = "SELECT * FROM villas";
-
-        try (Connection conn = Database.connect();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-
-            while (rs.next()) {
-                Villa villa = new Villa(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("description"),
-                        rs.getString("address")
-                );
-                villas.add(villa);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return villas;
-    }
+    private final VillaDAO villaDAO = new VillaDAO();
+    private final RoomDAO roomDAO = new RoomDAO();
+    private final ReviewDAO reviewDAO = new ReviewDAO();
+    private final BookingDAO bookingDAO = new BookingDAO();
 
     public String getAllVillasAsJson() {
         try {
-            return mapper.writeValueAsString(getAllVillas());
+            List<Villa> villas = villaDAO.getAllVillas();
+            return mapper.writeValueAsString(villas);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return "[]";
@@ -56,26 +29,8 @@ public class VillaService {
     }
 
     public String getVillaByIdAsJson(int id) {
-        Villa villa = null;
-        String query = "SELECT * FROM villas WHERE id = ?";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                villa = new Villa(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("description"),
-                        rs.getString("address")
-                );
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
         try {
+            Villa villa = villaDAO.getVillaById(id);
             return villa != null ? mapper.writeValueAsString(villa) : "{}";
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -83,124 +38,48 @@ public class VillaService {
         }
     }
 
-    public String searchVillaByDateAsJson(String queryString) {
-        // Belum diimplementasikan: parsing query ci_date & co_date
-        return "[]";
-    }
-
-    public String getRoomsByVillaIdAsJson(int villaId) {
-        List<Room> rooms = roomDAO.getRoomsByVillaId(villaId);
-        try {
-            return mapper.writeValueAsString(rooms); // Jackson ObjectMapper
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "{\"error\": \"JSON serialization failed\"}";
-        }
-    }
-
-    public String getBookingsByVillaIdAsJson(int villaId) {
-        List<Booking> bookings = bookingDAO.getBookingsByVillaId(villaId);
-
-        try {
-            return mapper.writeValueAsString(bookings);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "{\"error\": \"JSON serialization failed\"}";
-        }
-    }
-
-    public String getReviewsByVillaIdAsJson(int villaId) {
-        List<Reviews> reviews = reviewDAO.getReviewsByVillaId(villaId);
-        try {
-            return mapper.writeValueAsString(reviews);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "{\"error\":\"JSON serialization failed\"}";
-        }
-    }
-
     public String createVilla(HttpExchange exchange) throws IOException {
         InputStream is = exchange.getRequestBody();
         Villa villa = mapper.readValue(is, Villa.class);
-
-        String query = "INSERT INTO villas (name, description, address) VALUES (?, ?, ?)";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, villa.getName());
-            stmt.setString(2, villa.getDescription());
-            stmt.setString(3, villa.getAddress());
-            stmt.executeUpdate();
-
-            ResultSet keys = stmt.getGeneratedKeys();
-            if (keys.next()) {
-                villa.setId(keys.getInt(1));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return mapper.writeValueAsString(villa);
-    }
-
-    public String addRoomToVilla(HttpExchange exchange, int villaId) throws IOException {
-        InputStream is = exchange.getRequestBody();
-        Room room = mapper.readValue(is, Room.class);
-        room.setVilla(villaId);  // ganti dari setVillaId
-
-        String query = "INSERT INTO room_types (villa, name, quantity, capacity, price, bed_size, has_desk, has_ac, has_tv, has_wifi, has_shower, has_hotwater, has_fridge) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";  // ⬅️ Total: 14 kolom
-
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-
-            stmt.setInt(1, room.getVilla());
-            stmt.setString(2, room.getName());
-            stmt.setInt(3, room.getQuantity());
-            stmt.setInt(4, room.getCapacity());
-            stmt.setInt(5, room.getPrice());
-            stmt.setString(6, room.getBedSize().toString().toLowerCase());
-            stmt.setBoolean(7, room.hasDesk());
-            stmt.setBoolean(8, room.hasAc());
-            stmt.setBoolean(9, room.hasTv());
-            stmt.setBoolean(10, room.hasWifi());
-            stmt.setBoolean(11, room.hasShower());
-            stmt.setBoolean(12, room.hasHotwater());
-            stmt.setBoolean(13, room.hasFridge());
-
-            stmt.executeUpdate();
-
-            ResultSet keys = stmt.getGeneratedKeys();
-            if (keys.next()) {
-                room.setId(keys.getInt(1));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return mapper.writeValueAsString(room);
+        Villa inserted = villaDAO.insertVilla(villa);
+        return mapper.writeValueAsString(inserted);
     }
 
     public String updateVilla(HttpExchange exchange, int id) throws IOException {
         InputStream is = exchange.getRequestBody();
         Villa villa = mapper.readValue(is, Villa.class);
-
-        String query = "UPDATE villas SET name = ?, description = ?, address = ? WHERE id = ?";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, villa.getName());
-            stmt.setString(2, villa.getDescription());
-            stmt.setString(3, villa.getAddress());
-            stmt.setInt(4, id);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
         villa.setId(id);
-        return mapper.writeValueAsString(villa);
+        boolean success = villaDAO.updateVilla(villa);
+        if (success) {
+            return mapper.writeValueAsString(villa);
+        } else {
+            return "{\"error\":\"Villa not found or update failed\"}";
+        }
+    }
+
+    public String deleteVilla(int id) {
+        boolean success = villaDAO.deleteVilla(id);
+        return success ?
+                "{\"message\":\"Villa deleted successfully\"}" :
+                "{\"error\":\"Deletion failed\"}";
+    }
+
+    public String getRoomsByVillaIdAsJson(int villaId) {
+        try {
+            List<Room> rooms = roomDAO.getRoomsByVillaId(villaId);
+            return mapper.writeValueAsString(rooms);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "{\"error\": \"JSON serialization failed\"}";
+        }
+    }
+
+    public String addRoomToVilla(HttpExchange exchange, int villaId) throws IOException {
+        InputStream is = exchange.getRequestBody();
+        Room room = mapper.readValue(is, Room.class);
+        room.setVilla(villaId);
+        Room insertedRoom = roomDAO.insertRoom(room); // pastikan kamu punya insertRoom di RoomDAO
+        return mapper.writeValueAsString(insertedRoom);
     }
 
     public String updateRoom(HttpExchange exchange, int villaId, int roomId) throws IOException {
@@ -209,66 +88,41 @@ public class VillaService {
         room.setId(roomId);
         room.setVilla(villaId);
 
-        String query = "UPDATE room_types SET name = ?, quantity = ?, capacity = ?, price = ?, bed_size = ?, " +
-                "has_desk = ?, has_ac = ?, has_tv = ?, has_wifi = ?, has_shower = ?, has_hotwater = ?, has_fridge = ? " +
-                "WHERE id = ? AND villa = ?";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
-            stmt.setString(1, room.getName());
-            stmt.setInt(2, room.getQuantity());
-            stmt.setInt(3, room.getCapacity());
-            stmt.setInt(4, room.getPrice());
-            stmt.setString(5, room.getBedSize().toString().toLowerCase());
-            stmt.setBoolean(6, room.hasDesk());
-            stmt.setBoolean(7, room.hasAc());
-            stmt.setBoolean(8, room.hasTv());
-            stmt.setBoolean(9, room.hasWifi());
-            stmt.setBoolean(10, room.hasShower());
-            stmt.setBoolean(11, room.hasHotwater());
-            stmt.setBoolean(12, room.hasFridge());
-            stmt.setInt(13, roomId);
-            stmt.setInt(14, villaId);
-
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return mapper.writeValueAsString(room);
-    }
-
-    public String deleteVilla(int id) {
-        String query = "DELETE FROM villas WHERE id = ?";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return "{\"error\":\"Deletion failed\"}";
-        }
-        return "{\"message\":\"Villa deleted successfully\"}";
+        boolean success = roomDAO.updateRoom(room); // pastikan RoomDAO punya updateRoom
+        return success ?
+                mapper.writeValueAsString(room) :
+                "{\"error\":\"Update room failed\"}";
     }
 
     public String deleteRoomFromVilla(int villaId, int roomId) {
-        String query = "DELETE FROM room_types WHERE id = ? AND villa = ?";
-
-        try (Connection conn = Database.connect();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
-            stmt.setInt(1, roomId);
-            stmt.setInt(2, villaId);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return "{\"error\":\"Room deletion failed\"}";
-        }
-
-        return "{\"message\":\"Room deleted successfully\"}";
+        boolean success = roomDAO.deleteRoomFromVilla(villaId, roomId); // pastikan RoomDAO punya method ini
+        return success ?
+                "{\"message\":\"Room deleted successfully\"}" :
+                "{\"error\":\"Room deletion failed\"}";
     }
 
+    public String getBookingsByVillaIdAsJson(int villaId) {
+        try {
+            List<Booking> bookings = bookingDAO.getBookingsByVillaId(villaId);
+            return mapper.writeValueAsString(bookings);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "{\"error\":\"JSON serialization failed\"}";
+        }
+    }
 
+    public String getReviewsByVillaIdAsJson(int villaId) {
+        try {
+            List<Reviews> reviews = reviewDAO.getReviewsByVillaId(villaId);
+            return mapper.writeValueAsString(reviews);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "{\"error\":\"JSON serialization failed\"}";
+        }
+    }
+
+    public String searchVillaByDateAsJson(String queryString) {
+        // Belum diimplementasikan: parsing queryString (ci_date & co_date)
+        return "[]";
+    }
 }

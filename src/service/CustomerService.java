@@ -41,6 +41,20 @@ public class CustomerService {
                 return mapper.writeValueAsString(review);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
+                return "{\"error\": \"JSON serialization failed\"}";
+            }
+        }
+        return "{\"error\": \"Not Found\"}";
+    }
+
+    public String getReviewsByCustomerId(int customerId) {
+        List<Reviews> reviews = reviewDAO.getReviewsByCustomerId(customerId);
+        if (reviews != null && !reviews.isEmpty()) {
+            try {
+                return mapper.writeValueAsString(reviews);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                return "{\"error\": \"JSON serialization failed\"}";
             }
         }
         return "{\"error\": \"Not Found\"}";
