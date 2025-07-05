@@ -25,8 +25,9 @@ Tugas PBO 2
 
 
 
+![POST-Villas](https://github.com/user-attachments/assets/0d7a5649-8ca5-4f29-ad2f-594fb0af3386)
 
-p
+
 
 
 
@@ -41,7 +42,11 @@ p
 
 
 
-p
+![POST-Villas-Id-Rooms](https://github.com/user-attachments/assets/3489b414-2c53-4a13-b934-05717dea15f4)
+
+
+
+
 
 
 
@@ -60,8 +65,10 @@ p
 
 
 
+![GET-Villas](https://github.com/user-attachments/assets/87d1a072-d665-4b99-b420-51b6ce45ec7a)
 
-p
+
+
 
 
 
@@ -74,7 +81,8 @@ p
 
 
 
-p
+![GET-Villas-Id](https://github.com/user-attachments/assets/a5546ca9-23d2-4c8a-a386-59b9360ab474)
+
 
 
 
@@ -88,7 +96,8 @@ p
 
 
 
-p
+![GET-Villas-Id-Rooms](https://github.com/user-attachments/assets/a4bf01ba-b186-46e9-8bf4-0ae43a07cd5c)
+
 
 
 
@@ -102,8 +111,9 @@ p
 
 
 
+![GET-Villas-Id-Bookings](https://github.com/user-attachments/assets/82b298ff-fd16-4e21-b45f-0c54e7a74ca3)
 
-p
+
 
 
 
@@ -116,8 +126,9 @@ p
 
 
 
+![GET-Villas-Id-Review](https://github.com/user-attachments/assets/993f1f49-6d72-4e70-9971-91c80a551309)
 
-p
+
 
 
 
@@ -132,8 +143,9 @@ p
 
 
 
+![GET-Villas-Date](https://github.com/user-attachments/assets/22513ab5-3f32-4a72-b6f1-6378ca7ede25)
 
-p
+
 
 
 
@@ -158,8 +170,9 @@ p
 
 
 
+![PUT-Villas-Id](https://github.com/user-attachments/assets/35052c4b-eace-43f4-9431-611587f253a1)
 
-p
+
 
 
 
@@ -174,8 +187,9 @@ p
 
 
 
+![PUT-Villas-Id-Rooms-Id](https://github.com/user-attachments/assets/ad75c9cf-6162-4951-9e6e-2a9f08ef0229)
 
-p
+
 
 
 
@@ -198,8 +212,9 @@ p
 
 
 
+![DELETE-Villas-Id-Rooms-Id](https://github.com/user-attachments/assets/32781ec9-1366-458b-aba4-94fb876ff19d)
 
-p
+
 
 
 
@@ -213,8 +228,9 @@ p
 
 
 
+![DELETE-VIllas-Id](https://github.com/user-attachments/assets/a8650a23-85fa-4151-bb2e-280ca4b4ebd7)
 
-p
+
 
 
 
@@ -375,6 +391,8 @@ p
 
 
 
+
+![PUT-Customers-id](https://github.com/user-attachments/assets/883099f8-8bd7-461f-b3a7-bb7771d16f6e)
 
 
 
